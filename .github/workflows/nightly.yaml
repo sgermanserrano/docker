@@ -32,7 +32,6 @@ jobs:
           hadolint crossbuild/Dockerfile.melodic-crossbuild
           hadolint crossbuild/Dockerfile.melodic-crossbuild-driveworks
 
-
   build-base:
     needs: dockerfile-lint
 
