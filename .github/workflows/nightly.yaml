@@ -9,7 +9,7 @@ on:
 jobs:
 
   dockerfile-lint:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
 
     container:
       image: hadolint/hadolint:latest-debian
@@ -35,7 +35,7 @@ jobs:
   build-base:
     needs: dockerfile-lint
 
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic
@@ -58,7 +58,7 @@ jobs:
   build-base-cuda:
     needs: dockerfile-lint
 
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic

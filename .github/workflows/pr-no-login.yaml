@@ -10,7 +10,7 @@ on:
 jobs:
 
   dockerfile-lint:
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
 
     container:
       image: hadolint/hadolint:latest-debian
