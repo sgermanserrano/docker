@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, self-hosted]
+        os: [ubuntu-latest]
       fail-fast: false
 
     container:
