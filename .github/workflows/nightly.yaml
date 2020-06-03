@@ -103,4 +103,4 @@ jobs:
           cd crossbuild
           ./build_cross_image.sh -p $TARGET_PLATFORM -r $ROS_DISTRO -t $TAG_SUFFIX
           docker tag autoware/build:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
-          #docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
