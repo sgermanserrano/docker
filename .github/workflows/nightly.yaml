@@ -73,7 +73,6 @@ jobs:
       - name: Image build and push
         run: |
           docker login -u ${{ secrets.DKR_USR }} -p ${{ secrets.DKR_PASS }}
-          #sed -i 's/\/bin\/bash/\/bin\/sh/g' generic/build.sh
           cd generic
           ./build.sh -b -i ${{ secrets.DKR_USR }}/$IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
           docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-cuda
