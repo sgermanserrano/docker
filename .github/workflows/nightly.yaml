@@ -9,7 +9,11 @@ on:
 jobs:
 
   dockerfile-lint:
-    runs-on: [ubuntu-latest, self-hosted]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, self-hosted]
+      fail-fast: false
 
     container:
       image: hadolint/hadolint:latest-debian
@@ -35,7 +39,11 @@ jobs:
   build-base:
     needs: dockerfile-lint
 
-    runs-on: [ubuntu-latest, self-hosted]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, self-hosted]
+      fail-fast: false
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic
@@ -58,7 +66,7 @@ jobs:
   build-base-cuda:
     needs: dockerfile-lint
 
-    runs-on: [ubuntu-latest, self-hosted]
+    runs-on: ubuntu-latest
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic
