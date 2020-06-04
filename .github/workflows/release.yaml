@@ -20,10 +20,12 @@ jobs:
       image: hadolint/hadolint:latest-debian
 
     steps:
-      - name: Tag
-        run: |
-          export TAG_REF="${{ github.ref }}"
-          echo $TAG_REF | cut -c11-
+      - name: Get tag
+        id: get_tag
+        run: echo ::set-output name=TAG_REF::${GITHUB_REF/refs\/tags\//}
+
+      -name: Echo tag
+        run: echo ${{ steps.get_tag.outputs.TAG_REF }}
 
       - name: Checkout
         uses: actions/checkout@v2
