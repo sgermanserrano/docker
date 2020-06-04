@@ -60,8 +60,8 @@ jobs:
           hadolint crossbuild/Dockerfile.melodic-crossbuild
           hadolint crossbuild/Dockerfile.melodic-crossbuild-driveworks
 
-  build-base:
-    needs: dockerfile-lint
+  release-melodic-base:
+    needs: [get-tag, dockerfile-lint]
 
     runs-on: ${{ matrix.os }}
     strategy:
@@ -71,8 +71,8 @@ jobs:
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic
-      TAG_PREFIX: bleedingedge
-      VERSION: master
+      TAG_PREFIX: ${{ needs.get-tag.outputs.tag_ref }}
+      VERSION: ${{ needs.get-tag.outputs.tag_ref }}
 
     steps:
 
@@ -89,23 +89,27 @@ jobs:
         if: contains(matrix.os, 'ubuntu-latest')
         run: |
           docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-amd64
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-amd64
           docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-amd64
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-amd64
 
       - name: arm64v8 image re-tag and push
         if: contains(matrix.os, 'self-hosted')
         run: |
           docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-arm64v8
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-arm64v8
           docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-arm64v8
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-arm64v8
 
-  build-base-cuda:
-    needs: dockerfile-lint
+  release-melodic-base-cuda:
+    needs: [get-tag, dockerfile-lint]
 
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic
-      TAG_PREFIX: bleedingedge
-      VERSION: master
+      TAG_PREFIX: ${{ needs.get-tag.outputs.tag_ref }}
+      VERSION: ${{ needs.get-tag.outputs.tag_ref }}
 
     steps:
 
@@ -117,10 +121,77 @@ jobs:
           docker login -u ${{ secrets.DKR_USR }} -p ${{ secrets.DKR_PASS }}
           cd generic
           ./build.sh -b -i ${{ secrets.DKR_USR }}/$IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-cuda ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-cuda
           docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-cuda
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-cuda
 
-  build-aarch64-cross:
-    needs: dockerfile-lint
+  release-melodic:
+    needs: [get-tag, release-melodic-base]
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, self-hosted]
+      fail-fast: false
+    env:
+      IMAGE_NAME: autoware_github_actions
+      ROS_DISTRO: melodic
+      TAG_PREFIX: ${{ needs.get-tag.outputs.tag_ref }}
+      VERSION: ${{ needs.get-tag.outputs.tag_ref }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Image build
+        run: |
+          docker login -u ${{ secrets.DKR_USR }} -p ${{ secrets.DKR_PASS }}
+          cd generic
+          ./build.sh -c off -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+
+      - name: amd64 image re-tag and push
+        if: contains(matrix.os, 'ubuntu-latest')
+        run: |
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-amd64
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-amd64
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-amd64
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-amd64
+
+      - name: arm64v8 image re-tag and push
+        if: contains(matrix.os, 'self-hosted')
+        run: |
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-arm64v8
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-arm64v8
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-arm64v8
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-arm64v8
+
+  release-melodic-cuda:
+    needs: [get-tag, release-melodic-base-cuda]
+
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: autoware_github_actions
+      ROS_DISTRO: melodic
+      TAG_PREFIX: ${{ needs.get-tag.outputs.tag_ref }}
+      VERSION: ${{ needs.get-tag.outputs.tag_ref }}
+
+    steps:
+
+      - name: Checkout${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-aarch64
+        uses: actions/checkout@v2
+
+      - name: Image build and push
+        run: |
+          docker login -u ${{ secrets.DKR_USR }} -p ${{ secrets.DKR_PASS }}
+          cd generic
+          ./build.sh -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+          docker tag ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-cuda ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-cuda
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-cuda
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-cuda
+
+  release-melodic-aarch64-cross:
+    needs: get-tag
 
     runs-on: ubuntu-latest
     env:
@@ -129,8 +200,7 @@ jobs:
       TARGET_ARCH: aarch64
       TARGET_PLATFORM: generic-aarch64
       ROS_DISTRO: melodic
-      TAG_SUFFIX: bleedingedge
-      VERSION: master
+      TAG_SUFFIX: ${{ needs.get-tag.outputs.tag_ref }}
 
     steps:
 
@@ -143,18 +213,20 @@ jobs:
           cd crossbuild
           ./build_cross_image.sh -p $TARGET_PLATFORM -r $ROS_DISTRO -t $TAG_SUFFIX
           docker tag autoware/build:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
+          docker tag autoware/build:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-latest
           docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-$TAG_SUFFIX
+          docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TARGET_PLATFORM-$ROS_DISTRO-latest
 
 
   amd64-arm64v8-bundle:
-    needs: build-base
+    needs: [get-tag, release-melodic-base, release-melodic]
 
     runs-on: ubuntu-latest
     env:
       IMAGE_NAME: autoware_github_actions
       ROS_DISTRO: melodic
-      TAG_PREFIX: bleedingedge
-      VERSION: master
+      TAG_PREFIX: ${{ needs.get-tag.outputs.tag_ref }}
+      VERSION: ${{ needs.get-tag.outputs.tag_ref }}
 
     steps:
 
@@ -166,3 +238,18 @@ jobs:
           docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-amd64
           docker manifest create ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-amd64 --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base-arm64v8
           docker manifest push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-base
+
+          docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-arm64v8
+          docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-amd64
+          docker manifest create ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-amd64 --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base-arm64v8
+          docker manifest push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-base
+
+          docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-arm64v8
+          docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-amd64
+          docker manifest create ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-amd64 --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO-arm64v8
+          docker manifest push ${{ secrets.DKR_USR }}/$IMAGE_NAME:$TAG_PREFIX-$ROS_DISTRO
+
+          docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-arm64v8
+          docker pull ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-amd64
+          docker manifest create ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-amd64 --amend ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-arm64v8
+          docker manifest push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO
