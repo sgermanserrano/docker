@@ -24,7 +24,7 @@ jobs:
         id: get_tag
         run: |
           TAG_REF=${{ github.ref }}
-          TAG_REF=`echo $TAG_REF | cut -c11-``
+          TAG_REF=`echo $TAG_REF | cut -c11-`
           echo ::set-output name=TAG_REF::$TAG_REF
 
       - name: Echo tag
