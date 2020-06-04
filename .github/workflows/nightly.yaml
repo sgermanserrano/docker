@@ -52,6 +52,9 @@ jobs:
 
     steps:
 
+      - name: Check OS
+        run: echo ${{ matrix.os }}
+
       - name: Checkout
         uses: actions/checkout@v2
 
