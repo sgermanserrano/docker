@@ -23,7 +23,7 @@ jobs:
       - name: Tag
         run: |
           export TAG_REF="${{ github.ref }}"
-          #echo ${TAG_REF:10}
+          echo $TAG_REF
 
       - name: Checkout
         uses: actions/checkout@v2
