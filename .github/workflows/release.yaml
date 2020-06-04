@@ -21,7 +21,9 @@ jobs:
 
     steps:
       - name: Tag
-        run: echo ${{ github.ref }}
+        run: |
+          export TAG_REF=${{ github.ref }}
+          echo ${TAG_REF:10}
 
       - name: Checkout
         uses: actions/checkout@v2
