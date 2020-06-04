@@ -10,7 +10,10 @@ on:
 jobs:
 
   get-tag:
+
     runs-on: ubuntu-latest
+    outputs:
+      tag_ref: ${{ steps.get_tag.outputs.tag_ref }}
 
     steps:
       - name: Get tag
@@ -18,10 +21,10 @@ jobs:
         run: |
           TAG_REF=${{ github.ref }}
           TAG_REF=`echo $TAG_REF | cut -c11-`
-          echo ::set-env name=TAG_REF::$TAG_REF
+          echo ::set-output name=tag_ref::$TAG_REF
 
       - name: Echo tag
-        run: echo $TAG_REF
+        run: echo ${{ steps.get_tag.outputs.tag_ref }}
 
 
   dockerfile-lint:
@@ -39,7 +42,7 @@ jobs:
     steps:
 
       - name: Echo tag
-        run: echo $TAG_REF
+        run: echo ${{ needs.get-tag.outputs.tag_ref }}
 
       - name: Checkout
         uses: actions/checkout@v2
