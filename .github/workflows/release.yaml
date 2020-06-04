@@ -5,7 +5,7 @@ on:
     branches:
       - disabled
     tags:
-      - 0*
+      - 1*
 
 jobs:
 
@@ -191,7 +191,7 @@ jobs:
           docker push ${{ secrets.DKR_USR }}/$IMAGE_NAME:latest-$ROS_DISTRO-cuda
 
   release-melodic-aarch64-cross:
-    needs: get-tag
+    needs: [get-tag, dockerfile-lint]
 
     runs-on: ubuntu-latest
     env:
