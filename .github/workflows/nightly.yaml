@@ -55,7 +55,8 @@ jobs:
       - name: Check OS
         if: contains(matrix.os, 'ubuntu-latest')
         run: echo "I'm ubuntu"
-
+        
+      - name: Check arm
         if: contains(matrix.os, 'self-hosted')
         run: echo "I'm localhost"
 
