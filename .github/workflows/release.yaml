@@ -9,6 +9,21 @@ on:
 
 jobs:
 
+  get-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get tag
+        id: get_tag
+        run: |
+          TAG_REF=${{ github.ref }}
+          TAG_REF=`echo $TAG_REF | cut -c11-`
+          echo ::set-env name=TAG_REF::$TAG_REF
+
+      - name: Echo tag
+        run: echo $TAG_REF
+
+
   dockerfile-lint:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -20,16 +35,10 @@ jobs:
       image: hadolint/hadolint:latest-debian
 
     steps:
-      - name: Get tag
-        id: get_tag
-        run: |
-          TAG_REF=${{ github.ref }}
-          TAG_REF=`echo $TAG_REF | cut -c11-`
-          echo ::set-output name=TAG_REF::$TAG_REF
 
       - name: Echo tag
-        run: echo ${{ steps.get_tag.outputs.TAG_REF }}
-
+        run: echo $TAG_REF
+        
       - name: Checkout
         uses: actions/checkout@v2
 
