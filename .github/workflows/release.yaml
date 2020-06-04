@@ -2,8 +2,10 @@ name: Release build
 
 on:
   push:
-    branches: disabled
+    branches:
+      - disabled
     tags:
+      - *
 
 jobs:
 
@@ -20,7 +22,7 @@ jobs:
     steps:
       - name: Tag
         run: echo ${{ github.ref }}
-        
+
       - name: Checkout
         uses: actions/checkout@v2
 
