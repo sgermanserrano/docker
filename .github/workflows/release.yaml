@@ -22,7 +22,10 @@ jobs:
     steps:
       - name: Get tag
         id: get_tag
-        run: echo ::set-output name=TAG_REF::${GITHUB_REF/refs\/tags\//}
+        run: |
+          TAG_REF=${{ github.ref }}
+          TAG_REF=`echo $TAG_REF | cut -c11-``
+          echo ::set-output name=TAG_REF::$TAG_REF
 
       - name: Echo tag
         run: echo ${{ steps.get_tag.outputs.TAG_REF }}
