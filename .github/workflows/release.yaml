@@ -5,6 +5,7 @@ on:
     branches:
       - disabled
     tags:
+      - 0*
 
 jobs:
 
