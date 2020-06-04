@@ -1,10 +1,9 @@
-name: Nightly build
+name: Release build
 
 on:
   push:
     branches: disabled
-  #schedule:
-  #  - cron: "0 1 * * *"
+    tags:
 
 jobs:
 
@@ -19,7 +18,9 @@ jobs:
       image: hadolint/hadolint:latest-debian
 
     steps:
-
+      - name: Tag
+        run: echo ${{ github.ref }}
+        
       - name: Checkout
         uses: actions/checkout@v2
 
