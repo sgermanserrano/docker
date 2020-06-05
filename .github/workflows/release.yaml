@@ -26,7 +26,6 @@ jobs:
       - name: Echo tag
         run: echo ${{ steps.get_tag.outputs.tag_ref }}
 
-
   dockerfile-lint:
     runs-on: ${{ matrix.os }}
     strategy:
