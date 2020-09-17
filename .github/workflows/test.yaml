@@ -1,0 +1,52 @@
+name: Test build
+
+on:
+  push:
+    branches: nightly_fix
+
+jobs:
+
+  build-base:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, self-hosted]
+      fail-fast: false
+    env:
+      IMAGE_NAME: autoware/autoware
+      ROS_DISTRO: melodic
+      TAG_PREFIX: bleedingedge
+      VERSION: master
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Image build
+        run: |
+          docker login -u "${{ secrets.DKR_USR }}" -p "${{ secrets.DKR_PASS }}"
+          cd generic
+          ./build.sh -b -c off -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
+
+
+  build-base-cuda:
+
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: autoware/autoware
+      ROS_DISTRO: melodic
+      TAG_PREFIX: bleedingedge
+      VERSION: master
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Image build and push
+        run: |
+          docker login -u "${{ secrets.DKR_USR }}" -p "${{ secrets.DKR_PASS }}"
+          cd generic
+          ./build.sh -b -i $IMAGE_NAME -r $ROS_DISTRO -t $TAG_PREFIX -v $VERSION
