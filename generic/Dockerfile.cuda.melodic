@@ -1,5 +1,5 @@
 ARG FROM_ARG
-FROM nvidia/opengl:1.0-glvnd-runtime-ubuntu18.04 as glvnd_runtime
+FROM nvidia/opengl:1.1-glvnd-runtime-ubuntu18.04 as glvnd_runtime
 # hadolint ignore=DL3006
 FROM ${FROM_ARG}
 
